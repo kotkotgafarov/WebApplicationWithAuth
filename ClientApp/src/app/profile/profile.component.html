@@ -1,0 +1,307 @@
+<div class="form-row" *ngIf="profile">
+  <div class="col">
+    <h3>Enrollees profile</h3>
+  </div>
+  <div class="col">
+    <h3 *ngIf="profile.enrolleesstatus.profileStatus == 0">Status: draft</h3>
+    <h3 *ngIf="profile.enrolleesstatus.profileStatus == 1">Status: under review</h3>
+    <h3 *ngIf="profile.enrolleesstatus.profileStatus == 2">Status: revision is needed</h3>
+    <h3 *ngIf="profile.enrolleesstatus.profileStatus == 3">Status: approved</h3>
+  </div>
+</div>
+<mat-autocomplete #auto="matAutocomplete">
+  <mat-option *ngFor="let option of addresses" [value]="option">{{option}}</mat-option>
+</mat-autocomplete>
+
+<div *ngIf="profile">
+  <fieldset [attr.disabled]="profile.enrolleesstatus.profileStatus == 1 || profile.enrolleesstatus.profileStatus == 3? true : null">
+
+    <mat-accordion multi="true">
+      <mat-expansion-panel expanded="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Main info and contacts
+          </mat-panel-title>
+          <mat-panel-description>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <em>
+          <label>Names</label>
+          <input type="text" [(ngModel)]="profile.enrollee.name" class="form-control" />
+          <label>Address</label>
+          <div class="form-row">
+            <div class="col">
+              <input type="text"
+                     [(ngModel)]="profile.enrollee.address"
+                     placeholder="Адрес"
+                     #trigger="matAutocompleteTrigger"
+                     class="form-control"
+                     aria-label="Number"
+                     matInput
+                     [matAutocomplete]="auto">
+            </div>
+            <div class="col">
+              <input type="button" value="Search" class="btn btn-primary" (click)="onAddressSelected(); openPanel(trigger); $event.stopPropagation()">
+            </div>
+          </div>
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="profile.enrollee.phone" class="form-control" prefix="+1" mask="(000) 000 00 00" />
+          <br> <br>
+        </em>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Relatives
+          </mat-panel-title>
+          <mat-panel-description>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <input type="button" value="Add a relative" class="btn btn-primary" (click)="addRelative()" />
+        <br>
+        <br>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <td>Type</td>
+              <td>Names</td>
+              <td>Phone</td>
+              <td>Birth date</td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of profile.relatives">
+              <ng-template [ngIf]="relative?.id != r.id" [ngIfElse]="edit">
+                <td>{{r?.type}}</td>
+                <td>{{r?.name}}</td>
+                <td>+7 {{r?.phone| mask: '(000) 000-0000'}}</td>
+                <td>{{r?.birthDate | date:'dd.MM.yyyy'}}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="editRelative(r)">Edit</button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteRelative(r)">Delete</button>
+                </td>
+              </ng-template>
+            </tr>
+          </tbody>
+        </table>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Docs
+          </mat-panel-title>
+          <mat-panel-description>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <input type="button" value="Add a document" class="btn btn-primary" (click)="addDoc()" />
+        <br>
+        <br>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <td>Type</td>
+              <td>Series</td>
+              <td>Number</td>
+              <td>Issued by</td>
+              <td>Issue date</td>
+              <td>Authority</td>
+              <td></td>
+              <td>File</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of profile.docs">
+              <ng-template [ngIf]="enrolleesdoc?.id != d.id" [ngIfElse]="editD">
+                <td>{{d?.type}}</td>
+                <td>{{d?.series}}</td>
+                <td>{{d?.number}}</td>
+                <td>{{d?.issuedBy}}</td>
+                <td>{{d?.issueDate | date:'dd.MM.yyyy'}}</td>
+                <td>{{d?.authority}}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="editDoc(d)">Edit</button>
+                  <button *ngIf="d.canBeDeleted" class="btn btn-sm btn-danger" (click)="deleteDoc(d)">Delete</button>
+                </td>
+                <td>
+                  <span *ngIf="d?.changed">Save the profile</span>
+                  <span *ngIf="!d?.changed">
+                    <input type="file" #file placeholder="Choose file" accept=".pdf,.jpg,.png,.gif,.jpeg,.bmp" (change)="upload(file.files,d)" style="display:none;">
+                    <!--<button type="button" class="btn btn-success" (click)="file.click()">Выберите файл</button>-->
+                    <a (click)="file.click()">Upload</a>&nbsp;
+                    <a *ngIf="d?.fileId" (click)="downloadfile(d)" [title]="d.fileName">Download</a>
+                  </span>
+                </td>
+              </ng-template>
+            </tr>
+          </tbody>
+        </table>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Education
+          </mat-panel-title>
+          <mat-panel-description>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <input type="button" value="Add an education" class="btn btn-primary" (click)="addEdu()" />
+        <br>
+        <br>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <td>Level</td>
+              <td>Year</td>
+              <td>Name of school</td>
+              <td>Doc</td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of profile.education">
+              <ng-template [ngIf]="enrolleeseducation?.id != r.id" [ngIfElse]="editE2">
+                <td>{{r?.educationLevelName}}</td>
+                <td>{{r?.year}}</td>
+                <td>{{r?.nameOfSchool}}</td>
+                <td>{{r?.enrolleesDocName}}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="editEdu(r)">Edit</button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteEdu(r)">Delete</button>
+                </td>
+              </ng-template>
+            </tr>
+          </tbody>
+        </table>
+      </mat-expansion-panel>
+
+    </mat-accordion>
+
+    <br> <br>
+    <input type="button" value="Save the profile" class="btn btn-primary" (click)="save()" />
+  </fieldset>
+</div>
+
+
+
+<br>
+<br>
+<div *ngIf="lkauser?.isModerator">
+  <h3>Moderator</h3>
+  <input type="button" value="Approve" class="btn btn-sm btn-success" (click)="updatestatus(3)" />&nbsp;&nbsp;
+  <input type="button" value="Sent to revision" class="btn btn-sm btn-warning" (click)="updatestatus(2)" />&nbsp;&nbsp;
+  <input type="button" value="Under review" class="btn btn-sm btn-primary" (click)="updatestatus(1)" />
+</div>
+
+
+<!--шаблон для редактирования-->
+<ng-template #edit>
+  <td>
+    <select [(ngModel)]="relative.type" class="form-control">
+      <option *ngFor="let c of relativeTypes" [value]="c">{{c}}</option>
+    </select>
+    <!--<input type="text" [(ngModel)]="relative.type" class="form-control" />-->
+  </td>
+  <td>
+    <input type="text" [(ngModel)]="relative.name" class="form-control" />
+  </td>
+  <td>
+    <input type="text" [(ngModel)]="relative.phone" class="form-control" prefix="+1" mask="(000) 000 00 00" />
+  </td>
+  <td>
+    <input type="date" [(ngModel)]="relative.birthdate" class="form-control" />
+  </td>
+  <td>
+    <input type="button" value="Save" (click)="saveRelative()" class="btn btn-sm btn-success" />
+    <input type="button" value="Cancel" (click)="cancelChangesRelative()" class="btn btn-sm btn-warning" />
+  </td>
+</ng-template>
+
+<!--шаблон для редактирования документа-->
+<ng-template #editD>
+  <td>
+    <!--<select [(ngModel)]="enrolleesdoc.type" [disabled]="!enrolleesdoc.canBeDeleted" class="form-control">
+      <option *ngFor="let c of docTypes" [value]="c">{{c}}</option>
+    </select>-->
+    <select [(ngModel)]="docTypeSelected" [disabled]="!enrolleesdoc.canBeDeleted" class="form-control" (change)="onDocTypeChange()">
+      <option *ngFor="let c of profile.doctypes" [ngValue]="c">{{c.name}}</option>
+    </select>
+  </td>
+  <td>
+    <input type="text" [(ngModel)]="enrolleesdoc.series" class="form-control" />
+  </td>
+  <td>
+    <input type="text" [(ngModel)]="enrolleesdoc.number" class="form-control" />
+  </td>
+  <td>
+    <input type="text" [(ngModel)]="enrolleesdoc.issuedBy" class="form-control" />
+  </td>
+  <td>
+    <input type="date" [(ngModel)]="enrolleesdoc.issueDate" class="form-control" />
+  </td>
+  <td>
+    <input type="text" [(ngModel)]="enrolleesdoc.authority" class="form-control" />
+  </td>
+  <td>
+    <input type="button" value="Save" (click)="saveDoc()" class="btn btn-sm btn-success" />
+    <input type="button" value="Cancel" (click)="cancelChangesDoc()" class="btn btn-sm btn-warning" />
+  </td>
+  <td>
+  </td>
+</ng-template>
+
+<!--шаблон для редактирования образования-->
+<ng-template #editE2>
+  <td>
+    <select [(ngModel)]="eduLevelSelected" class="form-control" (change)="onEduLevelChange()">
+      <option *ngFor="let c of profile.educationlevels" [ngValue]="c">{{c.name}}</option>
+    </select>
+  </td>
+  <td>
+    <input type="number" [(ngModel)]="enrolleeseducation.year" class="form-control" />
+  </td>
+  <td>
+    <input type="text" [(ngModel)]="enrolleeseducation.nameOfSchool" class="form-control" />
+  </td>
+  <td>
+    <select [(ngModel)]="docSelected" class="form-control" (change)="onDocChange()">
+      <option *ngFor="let d of profile.docs" [ngValue]="d">{{d.type+' '+d.series+d.number}}</option>
+    </select>
+  </td>
+  <td>
+    <input type="button" value="Save" (click)="saveEdu()" class="btn btn-sm btn-success" />
+  </td>
+
+
+</ng-template>
+
+<!-- <div class="form-group">
+  <label for="picture">Файл</label>
+  <div class="custom-file">
+    <input #file type="file" id="customFile" accept=".pdf,.jpg,.png,.gif,.jpeg,.bmp" multiple (change)="upload(file.files)" />
+    <label class="custom-file-label" for="customFile">Выберите файл</label>
+  </div>
+</div>
+<div class="progress">
+  <div class="progress-bar" role="progressbar" [style.width.%]="progress"></div>
+</div>
+
+  <div class="row" style="margin-bottom:15px;">
+    <div class="col-md-3">
+      <input type="file" #file placeholder="Choose file" accept=".pdf,.jpg,.png,.gif,.jpeg,.bmp" (change)="upload(file.files)" style="display:none;">
+      <button type="button" class="btn btn-success" (click)="file.click()">Выберите файл</button>
+    </div>
+    <div class="col-md-4">
+      <span *ngIf="progress > 0">
+        {{progress}}%
+      </span>
+      <span *ngIf="message">
+        {{message}}
+      </span>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-success" (click)="downloadfile()">Скачать файл</button>-->

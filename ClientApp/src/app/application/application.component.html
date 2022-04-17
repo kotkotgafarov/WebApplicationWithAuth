@@ -1,0 +1,262 @@
+<div class="form-row">
+  <div class="col">
+    <h3>Enrollees application</h3>
+  </div>
+  <div class="col">
+    <h3 *ngIf="application.enrolleesstatus.applicationStatus == 0">Status: draft</h3>
+    <h3 *ngIf="application.enrolleesstatus.applicationStatus == 1">Status: under review</h3>
+    <h3 *ngIf="application.enrolleesstatus.applicationStatus == 2">Status: revision is needed</h3>
+    <h3 *ngIf="application.enrolleesstatus.applicationStatus == 3">Status: approved</h3>
+  </div>
+</div>
+
+<div *ngIf="application">
+  <fieldset [attr.disabled]="application.enrolleesstatus.applicationStatus == 1 || application.enrolleesstatus.applicationStatus == 3? true : null">
+
+    <mat-accordion multi="true">
+      <mat-expansion-panel expanded="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Competitions
+          </mat-panel-title>
+          <mat-panel-description>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <td>Code</td>
+              <td>Speciality</td>
+              <td>Department</td>
+              <td>Budget</td>
+              <td>Form</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of application.competitions">
+              <td>{{c?.code}}</td>
+              <td>{{c?.speciality}}</td>
+              <td>{{c?.department}}</td>
+              <td>{{c?.budget}}</td>
+              <td>{{c?.form}}</td>
+              <td>
+                <button *ngIf="!c?.selected" class="btn btn-sm btn-primary" (click)="c.selected=true;">Selected</button>
+                <button *ngIf="c?.selected" class="btn btn-sm btn-danger" (click)="c.selected=false;">Select</button>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-success" (click)="openDescription(c)">Description</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Exams
+          </mat-panel-title>
+          <mat-panel-description>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <td>Name</td>
+              <td>Type</td>
+              <td>Min score</td>
+              <td>Max score</td>
+              <td>Score</td>
+              <td>Doc</td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ae of application.applicationsexam">
+              <ng-template [ngIf]="currentae?.id != ae.id" [ngIfElse]="edit">
+                <td>{{ae?.name}}</td>
+                <td>
+                  <div *ngIf="ae?.type==1">Gov.test</div>
+                  <div *ngIf="ae?.type==2">Exam</div>
+                  <div *ngIf="ae?.type==3">Achievement</div>
+                </td>
+                <td>{{ae?.minScore}}</td>
+                <td>{{ae?.maxScore}}</td>
+                <td>
+                  {{ae?.score}}
+                  <div *ngIf="ae?.type==2">
+                    {{ae?.subjectsSubstitutorName}}&nbsp;
+                  </div>
+                </td>
+                <td>{{ae?.enrolleesDocName}}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="editExam(ae)">Edit</button>
+                </td>
+              </ng-template>
+            </tr>
+          </tbody>
+        </table>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Contracts
+          </mat-panel-title>
+          <mat-panel-description>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <input type="button" value="Add a contract" class="btn btn-primary" (click)="addContract()" />
+        <br>
+        <br>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <td>Client</td>
+              <td>Doc</td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ac of application.applicationscontract">
+              <ng-template [ngIf]="applicationscontract?.id != ac.id" [ngIfElse]="editAC">
+                <td>{{ac?.client}}</td>
+                <td>{{ac?.enrolleesDocName}}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="editContract(ac)">Edit</button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteContract(ac)">Delete</button>
+                </td>
+              </ng-template>
+            </tr>
+          </tbody>
+        </table>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Achievements
+          </mat-panel-title>
+          <mat-panel-description>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <input type="button" value="Add an achievement" class="btn btn-primary" (click)="addAchievement()" />
+        <br>
+        <br>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <td>Achievement</td>
+              <td>Year</td>
+              <td>Doc</td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let aa of application.applicationsachievement">
+              <ng-template [ngIf]="applicationsachievement?.id != aa.id" [ngIfElse]="editAA">
+                <td>{{aa?.name}}</td>
+                <td>{{aa?.year}}</td>
+                <td>{{aa?.enrolleesDocName}}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="editAchievement(aa)">Edit</button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteAchievement(aa)">Delete</button>
+                </td>
+              </ng-template>
+            </tr>
+          </tbody>
+        </table>
+      </mat-expansion-panel>
+
+    </mat-accordion>
+
+    <br>
+    <input type="button" value="Save application" class="btn btn-primary" (click)="save()" />
+  </fieldset>
+</div>
+
+
+<br>
+<br>
+<div *ngIf="lkauser?.isModerator">
+  <h3>Функции модератораModerator</h3>
+  <input type="button" value="Approve" class="btn btn-sm btn-success" (click)="updatestatus(3)" />&nbsp;&nbsp;
+  <input type="button" value="Sent to revision" class="btn btn-sm btn-warning" (click)="updatestatus(2)" />&nbsp;&nbsp;
+  <input type="button" value="Under review" class="btn btn-sm btn-primary" (click)="updatestatus(1)" />
+</div>
+
+<!--шаблон для редактирования-->
+<ng-template #edit>
+  <td>{{currentae?.name}}</td>
+  <td>
+    <mat-button-toggle-group name="fontStyle" aria-label="Font Style" [(ngModel)]="currenttype" (change)="onCurrentTypeChange()">
+      <mat-button-toggle value="1" *ngIf="currentae?.egeIsFeasible">Gov.test</mat-button-toggle>
+      <mat-button-toggle value="2" *ngIf="currentae?.examIsFeasible">Exam</mat-button-toggle>
+      <mat-button-toggle value="3" *ngIf="currentae?.achievementIsFeasible">Achievement</mat-button-toggle>
+    </mat-button-toggle-group>
+  </td>
+  <td>
+    {{currentae?.minScore}}
+  </td>
+  <td>
+    {{currentae?.maxScore}}
+  </td>
+  <td>
+    <div *ngIf="currentae?.type==1">
+      <input type="number" [(ngModel)]="currentae.score" class="form-control" />
+    </div>
+    <div *ngIf="currentae?.type==2">
+      <select [(ngModel)]="subjectSelected" class="form-control" (change)="onSubjectChange()">
+        <option *ngFor="let s of subjects" [ngValue]="s">{{s.name}}</option>
+      </select>
+    </div>
+  </td>
+  <td>
+    <select *ngIf="currentae?.type!=2" [(ngModel)]="docSelected" class="form-control" (change)="onDocChange(1)">
+      <option *ngFor="let d of application.docs" [ngValue]="d">{{d.type+' '+d.series+d.number}}</option>
+    </select>
+  </td>
+  <td>
+    <input type="button" value="Save" (click)="saveExam()" class="btn btn-sm btn-success" />
+    <!--<input type="button" value="Отмена" (click)="cancelChangesExam()" class="btn btn-sm btn-warning" />-->
+  </td>
+</ng-template>
+
+
+
+
+<!--шаблон для редактирования контракта-->
+<ng-template #editAC>
+  <td>
+    <input type="text" [(ngModel)]="applicationscontract.client" class="form-control" />
+  </td>
+  <td>
+    <select [(ngModel)]="docSelected" class="form-control" (change)="onDocChange(2)">
+      <option *ngFor="let d of application.docs" [ngValue]="d">{{d.type+' '+d.series+d.number}}</option>
+    </select>
+  </td>
+  <td>
+    <input type="button" value="Save" (click)="saveContract()" class="btn btn-sm btn-success" />
+  </td>
+</ng-template>
+
+<!--шаблон для редактирования достижения-->
+<ng-template #editAA>
+  <td>
+    <input type="text" [(ngModel)]="applicationsachievement.name" class="form-control" />
+  </td>
+  <td>
+    <input type="number" [(ngModel)]="applicationsachievement.year" class="form-control" />
+  </td>
+  <td>
+    <select [(ngModel)]="docSelected" class="form-control" (change)="onDocChange(3)">
+      <option *ngFor="let d of application.docs" [ngValue]="d">{{d.type+' '+d.series+d.number}}</option>
+    </select>
+  </td>
+  <td>
+    <input type="button" value="Save" (click)="saveAchievement()" class="btn btn-sm btn-success" />
+  </td>
+</ng-template>
+
